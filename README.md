@@ -33,9 +33,9 @@ PLC工控圈老司机
 
 ### 截图（手机实机效果）
 
-<img src="assets/1.jpg" width="30%">
-<img src="assets/2.jpg" width="30%">
-<img src="assets/3.jpg" width="30%">
-<img src="assets/4.jpg" width="30%">
+<img src="assets/1.jpg" width="30%"> <img src="assets/2.jpg" width="30%">
+
+<img src="assets/3.jpg" width="30%"> <img src="assets/4.jpg" width="30%">
+
 
 > 觉得好用请给颗 Star 让更多兄弟看到
