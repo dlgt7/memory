@@ -6,7 +6,7 @@
 **手机浏览器直接打开 → 添加至主屏幕 → 秒变独立App**
 
 ### 在线使用地址（请星标收藏）：
-https://你的用户名.github.io/plc-memory-calculator
+https://dlgt7.github.io/memory
 
 ### 功能一览
 1. 模拟量 R ↔ 内存映像网地址（D区）快速互算（×2规律）
@@ -33,8 +33,8 @@ PLC工控圈老司机
 
 ### 截图（手机实机效果）
 
-![1](https://github.com/user-attachments/assets/d6e58999-5a05-4745-a208-2dab53efb416)![2](https://github.com/user-attachments/assets/3dc0ea04-e219-4c52-ab00-b3ac93a68ee1)
-
+![1](https://github.com/user-attachments/assets/d6e58999-5a05-4745-a208-2dab53efb416)
+![2](https://github.com/user-attachments/assets/3dc0ea04-e219-4c52-ab00-b3ac93a68ee1)
 ![3](https://github.com/user-attachments/assets/19d4f171-9f1e-42ba-b868-a3b520b0e814)
 ![4](https://github.com/user-attachments/assets/ae4d7de7-6232-48db-a829-b515ac8769e4)
 
