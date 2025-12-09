@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>内存映像网计算器 - 王国强</title>
+    <meta name="description" content="PLC内存映像网地址计算工具，手机专用，模拟量/数字量快速转换">
+    
+    <!-- PWA 支持 -->
+    <meta name="theme-color" content="#0066ff">
+    <link rel="manifest" href="data:application/manifest+json,{
+        \"name\": \"内存映像网计算器\",
+        \"short_name\": \"映像网计算\",
+        \"start_url\": \".\",
+        \"display\": \"standalone\",
+        \"background_color\": \"#ffffff\",
+        \"theme_color\": \"#0066ff\",
+        \"icons\": [{
+            \"src\": \"https://cdn-icons-png.flaticon.com/128/8092/8092561.png\",
+            \"sizes\": \"192x192\",
+            \"type\": \"image/png\"
+        }]
+    }">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            color: #333;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        header {
+            background: #0066ff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 { font-size: 1.5em; margin-bottom: 8px; }
+        .subtitle { font-size: 0.9em; opacity: 0.9; }
+
+        .tabs {
+            display: flex;
+            background: #f0f0f0;
+        }
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            background: #0066ff;
+            color: white;
+        }
+
+        .page {
+            padding: 25px;
+            display: none;
+        }
+        .page.active { display: block; }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            font-size: 0.95em;
+        }
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #0066ff;
+            box-shadow: 0 0 0 3px rgba(0,102,255,0.2);
+        }
+        .red { color: #e74c3c; }
+        .blue { color: #3498db; }
+        .green { color: #2ecc71; }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            background: #0066ff;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,102,255,0.4);
+        }
+        button:active { transform: translateY(2px); }
+
+        .result {
+            margin-top: 25px;
+            padding: 18px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: center;
+            min-height: 60px;
+            border: 2px solid #e0e0e0;
+        }
+        .error { color: #e74c3c; background: #ffeaea; border-color: #fababa; }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+            font-size: 0.9em;
+        }
+        .about { margin-top: 20px; text-align: center; }
+        .about button { background: #95a5a6; font-size: 0.9em; padding: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>内存映像网计算器</h1>
+            <div class="subtitle">手机专用版 · 王国强出品</div>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" data-page="1">模拟量→地址</div>
+            <div class="tab" data-page="2">地址→模拟量</div>
+            <div class="tab" data-page="3">数字量→地址+位</div>
+            <div class="tab" data-page="4">地址+位→数字量</div>
+        </div>
+
+        <!-- 页面1：模拟量计算16进制地址 -->
+        <div class="page active" id="page1">
+            <div class="input-group">
+                <label class="red">初始内存映象网地址 (16进制)</label>
+                <input type="text" id="a1_start_mem" placeholder="如: D1000">
+            </div>
+            <div class="input-group">
+                <label class="blue">初始R地址 (10进制)</label>
+                <input type="text" id="a1_start_r" placeholder="如: 100">
+            </div>
+            <div class="input-group">
+                <label>终止R地址 (10进制)</label>
+                <input type="text" id="a1_end_r" placeholder="如: 150">
+            </div>
+            <button onclick="calc(1)">开始计算 →</button>
+            <div class="result" id="result1"></div>
+        </div>
+
+        <!-- 页面2：模拟量计算R地址 -->
+        <div class="page" id="page2">
+            <div class="input-group">
+                <label class="red">初始内存映象网地址</label>
+                <input type="text" id="a2_start_mem" placeholder="D1000">
+            </div>
+            <div class="input-group">
+                <label>终止内存映象网地址</label>
+                <input type="text" id="a2_end_mem" placeholder="D1200">
+            </div>
+            <div class="input-group">
+                <label class="blue">初始R地址</label>
+                <input type="text" id="a2_start_r" placeholder="100">
+            </div>
+            <button onclick="calc(2)">开始计算 →</button>
+            <div class="result" id="result2"></div>
+        </div>
+
+        <!-- 页面3：数字量计算地址和位 -->
+        <div class="page" id="page3">
+            <div class="input-group">
+                <label class="red">初始内存映象网地址</label>
+                <input type="text" id="d1_start_mem" placeholder="D2000">
+            </div>
+            <div class="input-group">
+                <label class="green">初始M地址</label>
+                <input type="text" id="d1_start_m" placeholder="0">
+            </div>
+            <div class="input-group">
+                <label>终止M地址</label>
+                <input type="text" id="d1_end_m" placeholder="23">
+            </div>
+            <button onclick="calc(3)">开始计算 →</button>
+            <div class="result" id="result3"></div>
+        </div>
+
+        <!-- 页面4：数字量计算M地址 -->
+        <div class="page" id="page4">
+            <div class="input-group">
+                <label class="red">初始内存映象网地址</label>
+                <input type="text" id="d2_start_mem" placeholder="D2000">
+            </div>
+            <div class="input-group">
+                <label>终止内存映象网地址</label>
+                <input type="text" id="d2_end_mem" placeholder="D2005">
+            </div>
+            <div class="input-group">
+                <label class="green">初始M地址</label>
+                <input type="text" id="d2_start_m" placeholder="100">
+            </div>
+            <div class="input-group">
+                <label>位编号 (0-7)</label>
+                <input type="text" id="d2_bit" placeholder="5">
+            </div>
+            <button onclick="calc(4)">开始计算 →</button>
+            <div class="result" id="result4"></div>
+        </div>
+
+        <div class="about">
+            <button onclick="alert('内存映像网计算器 v3.0\n手机专用版\n作者：王国强\n功能：模拟量/数字量地址快速互转\n可添加至手机桌面使用')">关于本工具</button>
+        </div>
+    </div>
+
+    <footer>
+        专为PLC工程师设计 · 手机随时算 · 再也不用开电脑
+    </footer>
+
+    <script>
+        // 切换页面
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.onclick = () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById('page' + tab.dataset.page).classList.add('active');
+            };
+        });
+
+        // 核心计算函数（完全保留原逻辑）
+        function hexToInt(h) { return parseInt(h.replace(/[^0-9A-Fa-f]/g,''), 16); }
+        function intToHex(i) { return '0x' + i.toString(16).toUpperCase().padStart(4,'0').replace('0X',''); }
+
+        function calc(type) {
+            const resultDivs = ['','result1','result2','result3','result4'];
+            const div = document.getElementById(resultDivs[type]);
+            div.className = 'result';
+            try {
+                if (type === 1) {
+                    let mem = hexToInt(document.getElementById('a1_start_mem').value);
+                    let r1 = parseInt(document.getElementById('a1_start_r').value);
+                    let r2 = parseInt(document.getElementById('a1_end_r').value);
+                    if (isNaN(mem) || isNaN(r1) || isNaN(r2)) throw "请输入正确数值";
+                    let offset = (r2 - r1) * 2;
+                    let result = intToHex(mem + offset);
+                    div.innerHTML = `终止内存映象网地址: <span style="color:red;font-size:1.3em">${result}</span>`;
+                }
+                else if (type === 2) {
+                    let mem1 = hexToInt(document.getElementById('a2_start_mem').value);
+                    let mem2 = hexToInt(document.getElementById('a2_end_mem').value);
+                    let r1 = parseInt(document.getElementById('a2_start_r').value);
+                    if (isNaN(mem1) || isNaN(mem2) || isNaN(r1)) throw "请输入正确数值";
+                    let offset = (mem2 - mem1) / 2;
+                    let result = r1 + offset;
+                    div.innerHTML = `终止R地址: <span style="color:blue;font-size:1.3em">${result}</span>`;
+                }
+                else if (type === 3) {
+                    let mem = hexToInt(document.getElementById('d1_start_mem').value);
+                    let m1 = parseInt(document.getElementById('d1_start_m').value);
+                    let m2 = parseInt(document.getElementById('d1_end_m').value);
+                    if (isNaN(mem) || isNaN(m1) || isNaN(m2)) throw "请输入正确数值";
+                    let totalBits = m2 - m1;
+                    let offset = Math.floor(totalBits / 8);
+                    let bit = totalBits % 8;
+                    let resultMem = intToHex(mem + offset);
+                    div.innerHTML = `终止地址: <span style="color:red">${resultMem}</span>  位编号: <span style="color:green">${bit}</span>`;
+                }
+                else if (type === 4) {
+                    let mem1 = hexToInt(document.getElementById('d2_start_mem').value);
+                    let mem2 = hexToInt(document.getElementById('d2_end_mem').value);
+                    let m1 = parseInt(document.getElementById('d2_start_m').value);
+                    let bit = parseInt(document.getElementById('d2_bit').value);
+                    if (isNaN(mem1) || isNaN(mem2) || isNaN(m1) || isNaN(bit) || bit > 7) throw "位编号必须是0-7";
+                    let offset = (mem2 - mem1) * 8 + bit;
+                    let result = m1 + offset;
+                    div.innerHTML = `终止M地址: <span style="color:green;font-size:1.3em">${result}</span>`;
+                }
+            } catch (e) {
+                div.className += ' error';
+                div.textContent = '错误：' + e;
+            }
+        }
+
+        // 支持回车计算
+        document.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                const active = document.querySelector('.tab.active').dataset.page;
+                calc(parseInt(active));
+            }
+        });
+    </script>
+</body>
+</html>
